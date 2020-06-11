@@ -3,8 +3,9 @@ from random import random, seed
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 
-from veh_rout_prob_Dav import VRProb
+from veh_rout_prob_summarise import VRProb
 from crou060_veh_rout_func import myopts, formulate, solve_and_display, get_assignments
+from asgn001_veh_rout_func import myopts, formulate, solve_and_display, get_assignments
 
 
 class Problem(object):
@@ -53,14 +54,14 @@ def run():
     prob3 = Problem(3, useall=True)
     fig3 = prob3.run_problem([1, 5, 23, 42, 1721, 6174], 3, 2, 'Three')
 
-    with PdfPages('outputA.pdf') as pdf:
+    with PdfPages('output_1.pdf') as pdf:
         pdf.savefig(fig1)
         plt.close()
         pdf.savefig(fig2)
         plt.close()
         pdf.savefig(fig3)
 
-    # # I split these as the code did not like having so many charts open at once
+    # I split these as the code did not like having so many charts open at once
     # prob1 = Problem(5)
     # fig1 = prob1.run_problem([1006, 1007, 1008, 1010, 1012, 1013], 3, 2, 'One')
     #
@@ -70,7 +71,7 @@ def run():
     # prob3 = Problem(3, useall=True)
     # fig3 = prob3.run_problem([1006, 1007, 1008, 1010, 1012, 1013], 3, 2, 'Three')
     #
-    # with PdfPages('outputB.pdf') as pdf:
+    # with PdfPages('output_original2.pdf') as pdf:
     #     pdf.savefig(fig1)
     #     plt.close()
     #     pdf.savefig(fig2)
