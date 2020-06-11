@@ -115,7 +115,7 @@ def user_branch_tsp(prob, sol):
     # Display the current node solution
     assignments = get_assignments_tsp(prob, sol, prob.tol)                                                           # #
     prob.tsp.setSolution(assignments, prob.tol)  # All non-zero arcs
-    prob.tsp.displaySolution(title="Branching", showProb=False)
+    # prob.tsp.displaySolution(title="Branching", showProb=False)
 
     return None
 
