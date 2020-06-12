@@ -165,9 +165,9 @@ for upi in upis:
             # 1: [1, 5],
             # 2: [1, 3, 5, 7],
             # 3: [1, 5, 9, 13]
-            1: [1, 5, 23, 42, 1721, 6174],
-            # 2: [1, 5, 23, 42, 1721, 6174],
-            # 3: [1, 5, 23, 42, 1721, 6174]
+            1: [1, 5, 23, 42, 64, 100],
+            2: [1, 5, 23, 42, 64, 100],
+            3: [1, 5, 23, 42, 64, 100]
         }
 
         result = {}
@@ -199,9 +199,9 @@ for p in results[upis[0]]:
 
         first.append([upis[0],
                       p[4:],
-                      round(results[upis[0]][p][0], 2),
+                      round(results[upis[0]][p][0], 3),
                       results[upis[0]][p][1],
-                      round(results[upis[0]][p][2], 2)
+                      round(results[upis[0]][p][2], 3)
                       ])
 
     except:
@@ -211,9 +211,9 @@ for p in results[upis[0]]:
     try:
         second.append([upis[1],
                        p[4:],
-                       round(results[upis[1]][p][0], 2),
+                       round(results[upis[1]][p][0], 3),
                        results[upis[1]][p][1],
-                       round(results[upis[1]][p][2], 2)
+                       round(results[upis[1]][p][2], 3)
                        ])
     except:
         print(upis[1], " threw an error on cart and seed: ", p[4:], )

@@ -40,7 +40,14 @@ def formulate_tsp(tsp, options={}):
         prob += lpSum(assign_vars[i, j] for j in tsp.EXTLOCS
                       if j != i) == 1
 
-        # Attach the problem data and variable dictionaries to the DipProblem
+    # if tsp.distcap is not None:
+    #
+    #     prob += lpSum(tsp.dist[i, j] * assign_vars[i, j]
+    #                   for i in tsp.EXTLOCS
+    #                   for j in tsp.EXTLOCS
+    #                   if i != j) <= tsp.distcap
+
+    # Attach the problem data and variable dictionaries to the DipProblem
     prob.tsp = tsp
     prob.assign_vars = assign_vars
 
@@ -127,8 +134,8 @@ def generate_cuts_tsp(prob, sol):
     obj_val = 0.0
     for v in prob.objective:
         obj_val += prob.objective[v] * sol[v]
-    print("In generate_cuts...")
-    print("Solution value =", obj_val)
+    # print("In generate_cuts...")
+    # print("Solution value =", obj_val)
     sys.stdout.flush()
 
     # Extract and print the current solution
@@ -178,7 +185,7 @@ def generate_cuts_tsp(prob, sol):
                               for i in tNodes
                               for j in set(nodes).difference(tNodes))
                         >= 2)
-            print("Subtour elimination!", cons[-1])
+            # print("Subtour elimination!", cons[-1])
             # Return one subtour elimination constraint at a time
             # (can comment out as multiple cuts can be added at once)
             if cons_added == 1: return cons
@@ -198,8 +205,8 @@ def is_solution_feasible_tsp(prob, sol, tol):
     obj_val = 0.0
     for v in prob.objective:
         obj_val += prob.objective[v] * sol[v]
-    print("In is_solution_feasible...")
-    print("Solution value =", obj_val)
+    # print("In is_solution_feasible...")
+    # print("Solution value =", obj_val)
     sys.stdout.flush()
 
     # Extract and print the current solution
@@ -230,11 +237,11 @@ def is_solution_feasible_tsp(prob, sol, tol):
     #   print(tNodes, tArcs)
     # If it is a subtour then the problem is infeasible, so will generate cuts
     if (len(tNodes) == len(tArcs)) and (len(tNodes) < len(nodes)):
-        print("Solution has subtours!")
+        # print("Solution has subtours!")
         return False
 
     # No subtours!
-    print("Solution has no subtours!")
+    # print("Solution has no subtours!")
     return True
 
 

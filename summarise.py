@@ -4,7 +4,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 
 from veh_rout_prob_summarise import VRProb
-from crou060_veh_rout_func import myopts, formulate, solve_and_display, get_assignments
+# from crou060_veh_rout_func import myopts, formulate, solve_and_display, get_assignments
 from asgn001_veh_rout_func import myopts, formulate, solve_and_display, get_assignments
 
 
@@ -45,21 +45,23 @@ class Problem(object):
 
 def run():
 
-    prob1 = Problem(5)
-    fig1 = prob1.run_problem([1, 5, 23, 42, 1721, 6174], 3, 2, 'One')
+    # prob1 = Problem(5)
+    # fig1 = prob1.run_problem([1, 5, 23, 42, 1721, 6174], 3, 2, 'One')
 
     prob2 = Problem(5, distcap=6)
-    fig2 = prob2.run_problem([1, 5, 23, 42, 1721, 6174], 3, 2, 'Two')
+    # fig2 = prob2.run_problem([1, 5, 23, 42, 1721, 6174], 3, 2, 'Two')
+    fig2 = prob2.run_problem([1, 3, 5, 7, 1721, 64], 3, 2, 'Two')
 
-    prob3 = Problem(3, useall=True)
-    fig3 = prob3.run_problem([1, 5, 23, 42, 1721, 6174], 3, 2, 'Three')
+    # prob3 = Problem(3, useall=True)
+    # fig3 = prob3.run_problem([1, 5, 23, 42, 1721, 6174], 3, 2, 'Three')
 
     with PdfPages('output_1.pdf') as pdf:
-        pdf.savefig(fig1)
-        plt.close()
+        # pdf.savefig(fig1)
+        # plt.close()
         pdf.savefig(fig2)
         plt.close()
-        pdf.savefig(fig3)
+        # pdf.savefig(fig3)
+        # plt.close()
 
     # I split these as the code did not like having so many charts open at once
     # prob1 = Problem(5)

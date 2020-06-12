@@ -19,9 +19,8 @@ myopts = {
      "Aggregate": "on",
      "Tight": "on",
     "Priority": "x",
-    # "Priority": "y",
-    # "Priority": "xym"
-}
+    # "Cuts": "CGL"
+    }
 
 
 def formulate(vrp, options={}):
