@@ -12,12 +12,12 @@ from veh_rout_prob import FIGSIZE, get_graphs, get_subtour
 tol = pow(pow(2, -20), 2.0 / 3.0)
 myopts = {
     "Tol": tol,
-    #  "Interval": 10,
-     "Interval": 1000,
+    # "Interval": 10,
+    "Interval": 1000,
     # "Interval": None,
-     "Antisymmetry": "on",
-     "Aggregate": "on",
-     "Tight": "on",
+    "Antisymmetry": "on",
+    "Aggregate": "on",
+    "Tight": "on",
     "Priority": "x",
     # "Cuts": "CGL"
     }
@@ -103,10 +103,11 @@ def formulate(vrp, options={}):
                           if i != j) <= len(vrp.EXTLOCS) * use_vars[k]
 
     if ('Tight' in options) and (options['Tight'] == 'on'):
-        for i in vrp.EXTLOCS:
-            for j in vrp.EXTLOCS:
-                if i != j:
-                    prob += assign_vars[i, j, k] <= use_vars[k]
+        for k in vrp.VEHS:
+            for i in vrp.EXTLOCS:
+                for j in vrp.EXTLOCS:
+                    if i != j:
+                        prob += assign_vars[i, j, k] <= use_vars[k]
 
     # Attach the problem data and variable dictionaries to the DipProblem
     prob.vrp = vrp

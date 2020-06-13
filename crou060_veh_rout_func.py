@@ -18,8 +18,9 @@ myopts = {
     "Aggregate": "on",
     "Priority": "x",
     "Root": "Root TSP",
-    # "Node": "Frac Fit",
-    "Cuts": "CGL"
+    # "Node": "Rounding",
+    # "Cuts": "CGL",
+    # # # "Cuts": "Lazy Tight"
     }
 
 
@@ -164,22 +165,26 @@ def solve(prob, options={}):
     else:
         prob.root_heuristic = False
 
-    # if ("Node" in options) and (options["Node"] is not None):
-    #     prob.is_root_node = True
-    #     prob.node_heuristic = True
-    #     prob.heuristics = my_heuristics
-    # else:
-    #     prob.node_heuristic = False
+    if ("Node" in options) and (options["Node"] is not None):
+        prob.is_root_node = True
+        prob.node_heuristic = True
+        prob.heuristics = my_heuristics
+    else:
+        prob.node_heuristic = False
 
-    dippyOpts = {
-        #               'CutCGL': 1, # <----- Cuts turned on
-        'CutCGL': 0,  # <----- Cuts turned off
-        #               'LogDumpModel': 5,
-        #               'LogDebugLevel': 5,
-    }
+    dippyOpts = {}
+    #               'CutCGL': 1, # <----- Cuts turned on
+    # 'CutCGL': 0,  # <----- Cuts turned off
+    #               'LogDumpModel': 5,
+    #               'LogDebugLevel': 5,
+    # }
     # Can use Cut Generator Library (CGL) cuts too
-    if ("Cuts" in options) and (options["Cuts"] == "CGL"):
-        dippyOpts['CutCGL'] = 1
+    if "Cuts" in options:
+        if options["Cuts"] == "CGL":
+            dippyOpts['CutCGL'] = 1
+        elif options["Cuts"] == "Lazy Tight":
+            dippyOpts['CutLazyTight'] = 1
+
     if "Interval" in options:
         prob.display_interval = options["Interval"]
 
@@ -363,7 +368,9 @@ def my_branch(prob, sol):
 
     if ("Aggregate" in options) and (options["Aggregate"] == "on"):
         bounds = symmetry(prob, sol)
-    elif ("Priority" in options) and (options["Priority"] == "x"):
+
+    if (bounds is None) and ("Priority" in options) and (options["Priority"] == "x"):
+        # If symmetry found nothing / is off, run this
         bounds = most_frac_use(prob, sol)
 
     return bounds
@@ -433,11 +440,11 @@ def my_heuristics(prob, xhat, cost):
         if prob.root_heuristic:
             if ("Root" in options) and (options["Root"] == "Root TSP"):
                 sol = root_tsp(prob)
-    #
-    # else:
-    #     if prob.node_heuristic:  # Are we using a node heuristic?
-    #         if ("Node" in options) and (options["Node"] == "Frac Fit"):
-    #             sol = frac_fit(prob, xhat)
+
+    else:
+        if prob.node_heuristic:  # Are we using a node heuristic?
+            if ("Node" in options) and (options["Node"] == "Rounding"):
+                sol = improvement_tsp(prob, xhat)
 
     if sol is not None:
         return [sol]
@@ -446,19 +453,17 @@ def my_heuristics(prob, xhat, cost):
 def root_tsp(prob):
 
     # The maxdist root node heuristic is poor, don't use it
-    if prob.vrp.distcap:
+    if prob.vrp.distcap is not None:
         return None
 
     vrp         = prob.vrp
     use_vars    = prob.use_vars
     assign_vars = prob.assign_vars
-    dist        = vrp.dist
     LOCS        = vrp.LOCS
     allused     = vrp.allused
     maxdist     = vrp.distcap
     x           = vrp.x
     y           = vrp.y
-    tol         = prob.tol
 
     # Initialise sol
     sol = {}
@@ -485,24 +490,11 @@ def root_tsp(prob):
         # Route must include the depot
         for vehicle, route in enumerate(partitions):
 
-            # # Initialise TSP
-            # tsp = TSPProb(LOCS=route,
-            #               x=x,
-            #               y=y)
-            #
-            # # Formulate_TSP
-            # prob_tsp = formulate_tsp(tsp, options=tsp_opts)
-            # prob_tsp.display_mode = 'off'
-            #
-            # # Solve the TSP and display the B-&-B tree
-            # xopt = solve_and_display_tsp(prob_tsp, options=tsp_opts)
-            #
-            # # Extract the arcs assigned to the tour
-            # assignments = get_assignments_tsp(prob_tsp, xopt, tol)
             assignments = run_tsp(route, x, y)
 
             # Update sol with these assignments
             sol[use_vars[vehicle+1]] = 1
+
             for (i, j) in assignments.keys():
                 sol[assign_vars[i, j, vehicle+1]] = 1
 
@@ -530,20 +522,6 @@ def root_tsp(prob):
 
             for vehicle, route in enumerate(partitions):
 
-                # # Initialise TSP
-                # tsp = TSPProb(LOCS=route,
-                #               x=x,
-                #               y=y)
-                #
-                # # Formulate_TSP
-                # prob_tsp = formulate_tsp(tsp, options=tsp_opts)
-                # prob_tsp.display_mode = 'off'
-                #
-                # # Solve the TSP and display the B-&-B tree
-                # xopt = solve_and_display_tsp(prob_tsp, options=tsp_opts)
-                #
-                # # Extract the arcs assigned to the tour
-                # assignments[vehicle] = get_assignments_tsp(prob_tsp, xopt, tol)
                 assignments[vehicle] = run_tsp(route, x, y)
 
                 # Calculate the total_distance of the tour
@@ -568,6 +546,60 @@ def root_tsp(prob):
                 return sol
 
     return sol
+
+
+def improvement_tsp(prob, xhat):
+
+    if prob.vrp.distcap is not None or prob.vrp.allused:
+        return None
+
+    vrp = prob.vrp
+    use_vars = prob.use_vars
+    assign_vars = prob.assign_vars
+
+    sol = {}
+    # Initialise sol
+    for k in vrp.VEHS:
+        sol[use_vars[k]] = 0
+        for i in vrp.EXTLOCS:
+            for j in vrp.EXTLOCS:
+                if i != j:
+                    sol[assign_vars[i, j, k]] = 0
+
+    if "Tours" in prob.options:
+        threshold = prob.options["Tours"]
+    else:
+        threshold = 1.0 - prob.tol  # Default is to only consider integer arcs
+
+    # Split xhat into the vehicles and arcs
+    vehicles = dict({(key, val) for (key, val) in xhat.items() if str(key)[0] == "x"})
+    arcs     = dict({(key, val) for (key, val) in xhat.items() if str(key)[0] == "y"})
+
+    # Force vehicles to be on / off
+    for key, val in vehicles.items():
+        if val >= 0.3:
+            sol[key] = 1
+        else:
+            sol[key] = 0
+
+    # If no arcs are on, turn on the first by default
+    if len({val for (key, val) in sol.items() if val == 1}) == 0:
+        sol[use_vars[1]] = 1
+
+    # Force arcs to be on / off
+    for key, val in arcs.items():
+
+        if val >= 0.5:
+            sol[key] = 1
+        else:
+            sol[key] = 0
+
+    zz = dict({(key, val) for (key, val) in sol.items() if val > 0.95})
+
+    if is_solution_feasible(prob, sol, prob.tol):
+        return sol
+    else:
+        return None
 
 
 def run_tsp(route, x, y):

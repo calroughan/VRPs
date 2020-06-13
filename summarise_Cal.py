@@ -9,6 +9,7 @@ from veh_rout_prob import VRProb
 # Leave asgn001 here - It is Mike's benchmark code posted to Canvas
 # Change the one below it to your UPI
 upis = [
+    # "crou060",
     "asgn001",
     "crou060"
 ]
@@ -27,7 +28,6 @@ def total_dist(vrp):
 def cart1(theseed, disp=False):
     seed(theseed)
 
-    # Python starts here
     numLocs = 5
     locs = list(range(1, numLocs + 1))
     itmBnds = [0, 4]
