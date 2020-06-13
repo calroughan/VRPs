@@ -1,14 +1,13 @@
 from pulp import *
 import coinor.dippy as dippy
 import random
-import numpy as np
 import networkx as nx
 from math import floor, ceil, sqrt
 import matplotlib.pyplot as plt
 from veh_rout_prob import FIGSIZE, get_subtour
 
 USE_NETWORKX = True
-# FIGSIZE = (3, 1.5)
+FIGSIZE = (3, 1.5)
 FIGSTRETCH = 1.5
 NODESIZE = 100  # Default = 300
 FONTSIZE = 8  # Default = 12
@@ -24,7 +23,6 @@ myopts = {
     # "Priority": "y",
     "Root": "Root TSP",
     # "Node": "Rounding",
-    # "Node": "Fractional Fit",
     # "Cuts": "CGL",
     }
 
@@ -377,7 +375,7 @@ def my_branch(prob, sol):
 
     bounds = None
 
-    if (bounds is None) and ("Aggregate" in options) and (options["Aggregate"] == "on"):
+    if ("Aggregate" in options) and (options["Aggregate"] == "on"):
         bounds = symmetry(prob, sol)
 
     if (bounds is None) and ("Priority" in options) and (options["Priority"] == "x"):
@@ -394,8 +392,8 @@ def x_branch(prob, sol):
     vrp         = prob.vrp
     use_vars    = prob.use_vars
     tol         = prob.tol
-
     most        = float('-inf')
+
     Veh = None
     for k in vrp.VEHS:
         alpha = sol[use_vars[k]]
@@ -409,8 +407,8 @@ def x_branch(prob, sol):
 
     down_lbs = {}
     down_ubs = {}
-    up_lbs   = {}
-    up_ubs   = {}
+    up_lbs = {}
+    up_ubs = {}
 
     if Veh is not None:
         down_ubs[use_vars[Veh]] = 0.0
@@ -421,9 +419,9 @@ def x_branch(prob, sol):
 
 def y_branch(prob, sol, most=True):
     # Get the attached data and variable dicts
-    vrp         = prob.vrp
+    vrp = prob.vrp
     assign_vars = prob.assign_vars
-    tol         = prob.tol
+    tol = prob.tol
 
     if most:
         best = float('-inf')
@@ -447,10 +445,10 @@ def y_branch(prob, sol, most=True):
 
     down_lbs = {}
     down_ubs = {}
-    up_lbs   = {}
-    up_ubs   = {}
+    up_lbs = {}
+    up_ubs = {}
     if assign is not None:
-
+        #    print assign, sol[assign_vars[assign]]
         down_ubs[assign_vars[assign]] = 0.0
         up_lbs[assign_vars[assign]] = 1.0
 
@@ -471,8 +469,8 @@ def symmetry(prob, sol):
 
         down_lbs = {}
         down_ubs = {}
-        up_lbs   = {}
-        up_ubs   = {}
+        up_lbs = {}
+        up_ubs = {}
         for n in range(up - 1, len(vrp.VEHS)):
             down_ubs[use_vars[vrp.VEHS[n]]] = 0.0
         for n in range(up):
@@ -493,11 +491,9 @@ def my_heuristics(prob, xhat, cost):
                 sol = root_tsp(prob)
 
     else:
-        if prob.node_heuristic:
+        if prob.node_heuristic:  # Are we using a node heuristic?
             if ("Node" in options) and (options["Node"] == "Rounding"):
                 sol = improvement_tsp(prob, xhat)
-            elif ("Node" in options) and (options["Node"] == "Fractional Fit"):
-                sol = frac_fit(prob, xhat)
 
     if sol is not None:
         return [sol]
@@ -519,8 +515,7 @@ def root_tsp(prob):
     y           = vrp.y
 
     # Initialise sol
-    # Set all arcs to be empty
-    sol = dict((assign_vars[i, j, k], 0) for i in vrp.EXTLOCS for j in vrp.EXTLOCS for k in vrp.VEHS if i != j)
+    sol = {}
 
     if allused:
         n = vrp.fixed
@@ -532,6 +527,13 @@ def root_tsp(prob):
     # Partition nodes into n sets
     random.shuffle(LOCS)
     partitions = [LOCS[i::n] for i in range(n)]
+
+    # Set all arcs to be empty
+    for i in vrp.EXTLOCS:
+        for j in vrp.EXTLOCS:
+            for k in vrp.VEHS:
+                if i != j:
+                    sol[assign_vars[i, j, k]] = 0
 
     if maxdist is None:                                         # Separate heuristic for maxdist problems
         # Route must include the depot
@@ -595,66 +597,10 @@ def root_tsp(prob):
     return sol
 
 
-def frac_fit(prob, xhat):
-
-    # The maxdist root node heuristic is poor, don't use it
-    if prob.vrp.distcap is not None:
-        return None
-
-    vrp         = prob.vrp
-    assign_vars = prob.assign_vars
-    use_vars    = prob.use_vars
-    x           = vrp.x
-    y           = vrp.y
-
-    # Loop through and define the sol here
-    # sol = dict(((i, j, k), 0) for i in vrp.EXTLOCS for j in vrp.EXTLOCS for k in vrp.VEHS if i != j)
-    sol = dict((assign_vars[i, j, k], 0) for i in vrp.EXTLOCS for j in vrp.EXTLOCS for k in vrp.VEHS if i != j)
-
-    for k in vrp.VEHS:
-        sol[use_vars[k]] = 0
-
-    frac_sum = {}
-
-    assign = dict(((i, j, k), xhat[assign_vars[i, j, k]]) for i in vrp.EXTLOCS for j in vrp.EXTLOCS for k in vrp.VEHS if i != j)
-
-    # For a given node i and vehicle k, sum the fractional values for all arcs from i to j
-    for i in vrp.LOCS:
-        for k in vrp.VEHS:
-            frac_sum[i, k] = 0
-            for j in vrp.EXTLOCS:
-                if i != j:
-                    frac_sum[i, k] += assign[i, j, k]
-
-    # For each node, assign each node to the route with the highest fractional sum
-    partition = {}
-    for i in vrp.LOCS:
-        partition[i] = np.argmax([frac_sum[i, k] for k in vrp.VEHS]) + 1
-
-    # Loop through the vehicles in use and partition sets
-    partitions = []
-    for k in list(set([val for (key, val) in partition.items()])):
-        partitions.append([key for (key, val) in partition.items() if val == k])
-
-    for vehicle, route in enumerate(partitions):
-
-        assignments = run_tsp(route, x, y)
-
-        # Update sol with these assignments
-        sol[use_vars[vehicle + 1]] = 1
-
-        for (i, j) in assignments.keys():
-            sol[assign_vars[i, j, vehicle + 1]] = 1
-
-    return sol
-
-
 def improvement_tsp(prob, xhat):
 
     if prob.vrp.distcap is not None or prob.vrp.allused:
         return None
-    # if prob.vrp.allused:
-    #     return None
 
     vrp = prob.vrp
     use_vars = prob.use_vars

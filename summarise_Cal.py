@@ -9,9 +9,8 @@ from veh_rout_prob import VRProb
 # Leave asgn001 here - It is Mike's benchmark code posted to Canvas
 # Change the one below it to your UPI
 upis = [
-    # "crou060",
     "asgn001",
-    # "bbbb001",
+    "bnchmrk",
     "crou060"
 ]
 
@@ -193,6 +192,7 @@ titles = ['UPI:',
           'Time_taken_(s):']
 first = []
 second = []
+third = []
 
 for p in results[upis[0]]:
 
@@ -220,12 +220,23 @@ for p in results[upis[0]]:
         print(upis[1], " threw an error on cart and seed: ", p[4:], )
         second.append([upis[1], "Failed", "Failed", "Failed", "Failed"])
 
+    try:
+        third.append([upis[2],
+                      p[4:],
+                      round(results[upis[2]][p][0], 3),
+                      results[upis[2]][p][1],
+                      round(results[upis[2]][p][2], 3)
+                      ])
+    except:
+        print(upis[2], " threw an error on cart and seed: ", p[4:], )
+        second.append([upis[2], "Failed", "Failed", "Failed", "Failed"])
 
 print("\n\nHere's how your code compared to the benchmark asgn001:\n")
+
 for row in range(0, len(first)):
     for item in range(0, 5):
         print("".join(titles[item].ljust(20)),
               "".join(str(first[row][item]).ljust(12)),
-              "".join(str(second[row][item]).ljust(12)))
+              "".join(str(second[row][item]).ljust(12)),
+              "".join(str(third[row][item]).ljust(12)))
     print("\n")
-
