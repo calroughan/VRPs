@@ -13,11 +13,11 @@ tol = pow(pow(2, -20), 2.0 / 3.0)
 myopts = {
     "Tol": tol,
     "Interval": 1000,
-    "Antisymmetry": "on",
-    "Tight": "on",
-    "Aggregate": "on",
-    "Priority": "x",
-    "Root": "Root TSP",
+    # "Antisymmetry": "on",
+    # "Tight": "on",
+    # "Aggregate": "on",
+    # "Priority": "x",
+    # "Root": "Root TSP",
     # "Node": "Rounding",
     # "Cuts": "CGL",
     # # # "Cuts": "Lazy Tight"

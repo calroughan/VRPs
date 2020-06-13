@@ -10,7 +10,8 @@ from veh_rout_prob import VRProb
 # Change the one below it to your UPI
 upis = [
     # "crou060",
-    "asgn001",
+    # "asgn001",
+    "bbbb001",
     "crou060"
 ]
 
