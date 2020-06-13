@@ -185,11 +185,20 @@ def solve(prob, options={}):
     #               'LogDebugLevel': 5,
     # }
     # Can use Cut Generator Library (CGL) cuts too
+
+    # If distcap exists, turn on Cut CGL for it
+    if prob.vrp.distcap is not None:
+        options["Cuts"] = "CGL"
+        dippyOpts['CutCGL'] = 1
+    else:
+        options["Cuts"] = "None"
+        dippyOpts['CutCGL'] = 0
+
     if "Cuts" in options:
         if options["Cuts"] == "CGL":
             dippyOpts['CutCGL'] = 1
-        elif options["Cuts"] == "Lazy Tight":
-            dippyOpts['CutLazyTight'] = 1
+            # elif options["Cuts"] == "Lazy Tight":
+            #     dippyOpts['CutLazyTight'] = 1
 
     if "Interval" in options:
         prob.display_interval = options["Interval"]
@@ -377,7 +386,7 @@ def my_branch(prob, sol):
 
     bounds = None
 
-    if (bounds is None) and ("Aggregate" in options) and (options["Aggregate"] == "on"):
+    if ("Aggregate" in options) and (options["Aggregate"] == "on"):
         bounds = symmetry(prob, sol)
 
     if (bounds is None) and ("Priority" in options) and (options["Priority"] == "x"):

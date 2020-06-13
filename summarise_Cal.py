@@ -162,12 +162,12 @@ for upi in upis:
         myopts['Interval'] = None
 
         seeds = {
-            1: [1, 5],
-            2: [1, 3, 5, 7],
-            3: [1, 5, 9, 13]
-            # 1: [1, 5, 23, 42, 64, 100],
-            # 2: [1, 5, 23, 42, 64, 100],
-            # 3: [1, 5, 23, 42, 64, 100]
+            # 1: [1, 5],
+            # 2: [1, 3, 5, 7],
+            # 3: [1, 5, 9, 13]
+            1: [1, 5, 23, 42, 64, 100],
+            2: [1, 5, 23, 42, 64, 100],
+            3: [1, 5, 23, 42, 64, 100]
         }
 
         result = {}
@@ -231,12 +231,13 @@ for p in results[upis[0]]:
         print(upis[2], " threw an error on cart and seed: ", p[4:], )
         second.append([upis[2], "Failed", "Failed", "Failed", "Failed"])
 
-print("\n\nHere's how your code compared to the benchmark asgn001:\n")
+print("\n\nHere's how your code compared to the benchmark:\n")
 
 for row in range(0, len(first)):
     for item in range(0, 5):
         print("".join(titles[item].ljust(20)),
               "".join(str(first[row][item]).ljust(12)),
               "".join(str(second[row][item]).ljust(12)),
-              "".join(str(third[row][item]).ljust(12)))
+              "".join(str(third[row][item]).ljust(12))
+              )
     print("\n")
