@@ -40,13 +40,6 @@ def formulate_tsp(tsp, options={}):
         prob += lpSum(assign_vars[i, j] for j in tsp.EXTLOCS
                       if j != i) == 1
 
-    # if tsp.distcap is not None:
-    #
-    #     prob += lpSum(tsp.dist[i, j] * assign_vars[i, j]
-    #                   for i in tsp.EXTLOCS
-    #                   for j in tsp.EXTLOCS
-    #                   if i != j) <= tsp.distcap
-
     # Attach the problem data and variable dictionaries to the DipProblem
     prob.tsp = tsp
     prob.assign_vars = assign_vars

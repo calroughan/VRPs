@@ -19,7 +19,7 @@ myopts = {
     "Aggregate": "on",
     "Tight": "on",
     "Priority": "x",
-    # "Cuts": "CGL"
+    "Cuts": "CGL"
     }
 
 
